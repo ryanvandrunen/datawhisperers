@@ -21,6 +21,11 @@ interface PredictionData {
   prediction: string;
 }
 
+interface ApiResponse {
+  statusCode: number;
+  body: string;
+}
+
 export default function PredictionForm() {
   const [accessKey, setAccessKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
@@ -30,7 +35,7 @@ export default function PredictionForm() {
   const [error, setError] = useState<string | null>(null);
 
   // First, parse the outer response (if it's a string)
-  function parseApiResponse(response: string | Record<string, any>) {
+  function parseApiResponse(response: string | ApiResponse) {
     // If the response is already an object, use it directly
     const outerObject =
       typeof response === "string" ? JSON.parse(response) : response;
@@ -68,7 +73,7 @@ export default function PredictionForm() {
   }
 
   // Example usage in your predictData function
-  const handlePredictionResponse = (data: string | Record<string, any>) => {
+  const handlePredictionResponse = (data: string | ApiResponse) => {
     const parsedResult = parseApiResponse(data);
 
     if (parsedResult.success) {
