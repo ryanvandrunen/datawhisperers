@@ -1,5 +1,7 @@
 ## COMM493 POC Website
 
+**Disclaimer:** After starting your Learner Lab, it takes a few minutes for the authentication details to be activated.
+
 Go to the AWS Academy page.
 
 Click the AWS Details button.
