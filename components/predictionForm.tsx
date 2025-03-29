@@ -232,7 +232,7 @@ export default function PredictionForm() {
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="sessionToken" className="text-sm font-medium">
+            <label htmlFor="numPurchases" className="text-sm font-medium">
               Number of Purchases
             </label>
             <Input
@@ -244,8 +244,8 @@ export default function PredictionForm() {
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="sessionToken" className="text-sm font-medium">
-              Number of Purchases
+            <label htmlFor="totalSpent" className="text-sm font-medium">
+              Total Spent
             </label>
             <Input
               id="totalSpent"
@@ -256,8 +256,8 @@ export default function PredictionForm() {
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="sessionToken" className="text-sm font-medium">
-              Number of Purchases
+            <label htmlFor="income" className="text-sm font-medium">
+              Income
             </label>
             <Input
               id="income"
