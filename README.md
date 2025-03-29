@@ -1,6 +1,4 @@
-## COMM493 POC Website
-
-**Disclaimer:** After starting your Learner Lab, it takes a few minutes for the authentication details to be activated.
+## COMM493 Data Whisperers Website
 
 Go to the AWS Academy page.
 
@@ -12,4 +10,3 @@ Click the Show button next to AWS CLI.
 
 Copy and paste the following information from the AWS Academy page into their respective fields.
 ![image](https://github.com/user-attachments/assets/9faf2a31-1583-4de5-8c77-b4f233c43b84)
-

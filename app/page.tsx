@@ -1,4 +1,4 @@
-import PredictionForm from "../components/ui/predictionForm";
+import PredictionForm from "../components/predictionForm";
 
 export default function Home() {
   return (

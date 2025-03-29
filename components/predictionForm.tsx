@@ -17,8 +17,8 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface PredictionData {
-  selected_row: Record<string, string | number>;
-  prediction: string;
+  closestCluster: number;
+  distanceToCluster: number;
 }
 
 interface ApiResponse {
@@ -30,39 +30,43 @@ export default function PredictionForm() {
   const [accessKey, setAccessKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [sessionToken, setSessionToken] = useState("");
+  const [input1, setInput1] = useState("");
+  const [input2, setInput2] = useState("");
+  const [input3, setInput3] = useState("");
+  const [input4, setInput4] = useState("");
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState<PredictionData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // First, parse the outer response (if it's a string)
   function parseApiResponse(response: string | ApiResponse) {
-    // If the response is already an object, use it directly
+    console.log("Raw API Response:", response);
     const outerObject =
       typeof response === "string" ? JSON.parse(response) : response;
 
-    // Check if we got a successful response
-    if (outerObject.statusCode === 200) {
-      // Parse the body string to get the inner object
-      const bodyObject = JSON.parse(outerObject.body);
+    console.log("Parsed outer object:", outerObject);
 
-      // Extract prediction information
-      const selectedRow = bodyObject.selected_row;
-
-      // Parse the prediction string which is also JSON
-      const predictionObj = JSON.parse(bodyObject.prediction);
-      const score = predictionObj.predictions[0].score;
-      const predictedLabel = predictionObj.predictions[0].predicted_label;
+    // If the response is already the body object (status 200)
+    if (outerObject.predictions) {
+      const cluster = outerObject.predictions[0].closest_cluster;
+      const distance = outerObject.predictions[0].distance_to_cluster;
 
       return {
         success: true,
-        selectedRow,
-        score,
-        predictedLabel,
-        raw: {
-          outer: outerObject,
-          body: bodyObject,
-          prediction: predictionObj,
-        },
+        closestCluster: cluster,
+        distanceToCluster: distance,
+      };
+    }
+
+    // If it's wrapped in a status code structure
+    if (outerObject.statusCode === 200) {
+      const bodyObject = JSON.parse(outerObject.body);
+      const cluster = bodyObject.predictions[0].closest_cluster;
+      const distance = bodyObject.predictions[0].distance_to_cluster;
+
+      return {
+        success: true,
+        closestCluster: cluster,
+        distanceToCluster: distance,
       };
     } else {
       return {
@@ -72,17 +76,13 @@ export default function PredictionForm() {
     }
   }
 
-  // Example usage in your predictData function
   const handlePredictionResponse = (data: string | ApiResponse) => {
     const parsedResult = parseApiResponse(data);
 
     if (parsedResult.success) {
-      // Format for display
       setPrediction({
-        selected_row: parsedResult.selectedRow,
-        prediction: `Predicted Label: ${parsedResult.predictedLabel} (Score: ${(
-          parsedResult.score * 100
-        ).toFixed(2)}%)`,
+        closestCluster: parsedResult.closestCluster,
+        distanceToCluster: parsedResult.distanceToCluster,
       });
     } else {
       setError(parsedResult.error || "Unknown error occurred");
@@ -91,7 +91,6 @@ export default function PredictionForm() {
 
   async function predictData() {
     try {
-      // Use the input credentials instead of hardcoded values
       const options: SignedFetcherOptions = {
         service: "execute-api",
         region: "us-east-1",
@@ -105,21 +104,27 @@ export default function PredictionForm() {
 
       const signedFetch = createSignedFetcher(options);
       const url =
-        "https://0k4ujycugb.execute-api.us-east-1.amazonaws.com/dev/predict";
+        "https://nmxhlfgpm2.execute-api.us-east-1.amazonaws.com/dev/cluster";
+
+      const requestBody = {
+        input1,
+        input2,
+        input3,
+        input4,
+      };
 
       const response = await signedFetch(url, {
-        method: "GET",
-        // Add these headers to handle CORS and content type
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
 
-      // Parse the response as JSON
       const data = await response.json();
       return data;
     } catch (error) {
@@ -135,7 +140,6 @@ export default function PredictionForm() {
     setError(null);
 
     try {
-      // Call the API
       const data = await predictData();
       handlePredictionResponse(data);
     } catch (error) {
@@ -151,18 +155,9 @@ export default function PredictionForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-xl">Churn Model Prediction</CardTitle>
+        <CardTitle className="text-xl">Cluster Prediction</CardTitle>
       </CardHeader>
       <CardContent>
-        <div>
-          <Link
-            href="https://github.com/ryanvandrunen/comm493/blob/main/README.md"
-            target="_blank"
-            className="text-blue-600 hover:text-blue-800 underline hover:no-underline"
-          >
-            Where do I get this information?
-          </Link>
-        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="accessKey" className="text-sm font-medium">
@@ -202,6 +197,14 @@ export default function PredictionForm() {
               required
             />
           </div>
+          <label>Input 1</label>
+          <Input value={input1} onChange={(e) => setInput1(e.target.value)} />
+          <label>Input 2</label>
+          <Input value={input2} onChange={(e) => setInput2(e.target.value)} />
+          <label>Input 3</label>
+          <Input value={input3} onChange={(e) => setInput3(e.target.value)} />
+          <label>Input 4</label>
+          <Input value={input4} onChange={(e) => setInput4(e.target.value)} />
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
               <>
@@ -225,17 +228,8 @@ export default function PredictionForm() {
             <p className="text-red-500">{error}</p>
           ) : prediction ? (
             <div className="space-y-4">
-              <div>
-                <h3 className="font-medium mb-2">Prediction Result:</h3>
-                <p>{prediction.prediction}</p>
-              </div>
-
-              <div>
-                <h3 className="font-medium mb-2">Selected Features:</h3>
-                <pre className="whitespace-pre-wrap break-words text-sm">
-                  {JSON.stringify(prediction.selected_row, null, 2)}
-                </pre>
-              </div>
+              <p>Closest Cluster: {prediction.closestCluster}</p>
+              <p>Distance to Cluster: {prediction.distanceToCluster}</p>
             </div>
           ) : (
             <p className="text-muted-foreground">
