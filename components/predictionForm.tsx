@@ -30,43 +30,32 @@ export default function PredictionForm() {
   const [accessKey, setAccessKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [sessionToken, setSessionToken] = useState("");
-  const [input1, setInput1] = useState("");
-  const [input2, setInput2] = useState("");
-  const [input3, setInput3] = useState("");
-  const [input4, setInput4] = useState("");
+  const [recency, setRecency] = useState("");
+  const [numPurchases, setNumPurchases] = useState("");
+  const [income, setIncome] = useState("");
+  const [totalSpent, setTotalSpent] = useState("");
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState<PredictionData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function parseApiResponse(response: string | ApiResponse) {
-    console.log("Raw API Response:", response);
+    // If the response is already an object, use it directly
     const outerObject =
       typeof response === "string" ? JSON.parse(response) : response;
 
-    console.log("Parsed outer object:", outerObject);
-
-    // If the response is already the body object (status 200)
-    if (outerObject.predictions) {
-      const cluster = outerObject.predictions[0].closest_cluster;
-      const distance = outerObject.predictions[0].distance_to_cluster;
-
-      return {
-        success: true,
-        closestCluster: cluster,
-        distanceToCluster: distance,
-      };
-    }
-
-    // If it's wrapped in a status code structure
+    // Check if we got a successful response
     if (outerObject.statusCode === 200) {
+      // Parse the body string to get the inner object
       const bodyObject = JSON.parse(outerObject.body);
-      const cluster = bodyObject.predictions[0].closest_cluster;
-      const distance = bodyObject.predictions[0].distance_to_cluster;
+
+      // Parse the prediction string which is also JSON
+      const closest_cluster = bodyObject.closest_cluster;
+      const distance_to_cluster = bodyObject.distance_to_cluster;
 
       return {
         success: true,
-        closestCluster: cluster,
-        distanceToCluster: distance,
+        closestCluster: closest_cluster,
+        distanceToCluster: distance_to_cluster,
       };
     } else {
       return {
@@ -89,6 +78,19 @@ export default function PredictionForm() {
     }
   };
 
+  function parseCSVInput(raw: string) {
+    const numbers = raw.split(",").map((num) => {
+      const val = parseFloat(num.trim());
+      if (isNaN(val)) {
+        // INSTRUCTION: This error indicates that the input is invalid.
+        throw new Error("Invalid number encountered: " + num);
+      }
+      return val;
+    });
+    // Return object in the format expected by the API.
+    return { instances: [numbers] };
+  }
+
   async function predictData() {
     try {
       const options: SignedFetcherOptions = {
@@ -106,13 +108,9 @@ export default function PredictionForm() {
       const url =
         "https://nmxhlfgpm2.execute-api.us-east-1.amazonaws.com/dev/cluster";
 
-      const requestBody = {
-        input1,
-        input2,
-        input3,
-        input4,
-      };
-
+      const rawInput =
+        recency + "," + numPurchases + "," + totalSpent + "," + income;
+      const requestBody = parseCSVInput(rawInput);
       const response = await signedFetch(url, {
         method: "POST",
         headers: {
@@ -197,14 +195,30 @@ export default function PredictionForm() {
               required
             />
           </div>
-          <label>Input 1</label>
-          <Input value={input1} onChange={(e) => setInput1(e.target.value)} />
+          <div className="space-y-2">
+            <label htmlFor="sessionToken" className="text-sm font-medium">
+              Recency
+            </label>
+            <Input
+              id="recency"
+              value={recency}
+              onChange={(e) => setRecency(e.target.value)}
+              placeholder="Enter number of days since customer's last purchase"
+              required
+            />
+          </div>
           <label>Input 2</label>
-          <Input value={input2} onChange={(e) => setInput2(e.target.value)} />
+          <Input
+            value={numPurchases}
+            onChange={(e) => setNumPurchases(e.target.value)}
+          />
           <label>Input 3</label>
-          <Input value={input3} onChange={(e) => setInput3(e.target.value)} />
+          <Input
+            value={totalSpent}
+            onChange={(e) => setTotalSpent(e.target.value)}
+          />
           <label>Input 4</label>
-          <Input value={input4} onChange={(e) => setInput4(e.target.value)} />
+          <Input value={income} onChange={(e) => setIncome(e.target.value)} />
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
               <>
