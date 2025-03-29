@@ -156,6 +156,15 @@ export default function PredictionForm() {
         <CardTitle className="text-xl">Cluster Prediction</CardTitle>
       </CardHeader>
       <CardContent>
+        <div>
+          <Link
+            href="https://github.com/ryanvandrunen/datawhisperers/blob/main/README.md"
+            target="_blank"
+            className="text-blue-600 hover:text-blue-800 underline hover:no-underline"
+          >
+            Where do I get this information?
+          </Link>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="accessKey" className="text-sm font-medium">
@@ -207,18 +216,42 @@ export default function PredictionForm() {
               required
             />
           </div>
-          <label>Input 2</label>
-          <Input
-            value={numPurchases}
-            onChange={(e) => setNumPurchases(e.target.value)}
-          />
-          <label>Input 3</label>
-          <Input
-            value={totalSpent}
-            onChange={(e) => setTotalSpent(e.target.value)}
-          />
-          <label>Input 4</label>
-          <Input value={income} onChange={(e) => setIncome(e.target.value)} />
+          <div className="space-y-2">
+            <label htmlFor="sessionToken" className="text-sm font-medium">
+              Number of Purchases
+            </label>
+            <Input
+              id="numPurchases"
+              value={numPurchases}
+              onChange={(e) => setNumPurchases(e.target.value)}
+              placeholder="Enter number of purchases"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="sessionToken" className="text-sm font-medium">
+              Number of Purchases
+            </label>
+            <Input
+              id="totalSpent"
+              value={totalSpent}
+              onChange={(e) => setTotalSpent(e.target.value)}
+              placeholder="Enter customer's total amount spent ($)"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="sessionToken" className="text-sm font-medium">
+              Number of Purchases
+            </label>
+            <Input
+              id="income"
+              value={income}
+              onChange={(e) => setIncome(e.target.value)}
+              placeholder="Enter customer's yearly household income ($)"
+              required
+            />
+          </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
               <>
