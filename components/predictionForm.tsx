@@ -65,6 +65,10 @@ export default function PredictionForm() {
     }
   }
 
+  function isPositiveInteger(value: string) {
+    return /^[1-9]\d*$/.test(value);
+  }
+
   const handlePredictionResponse = (data: string | ApiResponse) => {
     const parsedResult = parseApiResponse(data);
 
@@ -136,6 +140,17 @@ export default function PredictionForm() {
     setLoading(true);
     setPrediction(null);
     setError(null);
+
+    if (
+      !isPositiveInteger(recency) ||
+      !isPositiveInteger(numPurchases) ||
+      !isPositiveInteger(totalSpent) ||
+      !isPositiveInteger(income)
+    ) {
+      setError("Data inputs must be positive integers.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const data = await predictData();
